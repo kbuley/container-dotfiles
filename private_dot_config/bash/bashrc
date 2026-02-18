@@ -114,3 +114,10 @@ git-root() {
   echo "You are not in a bare worktree."
   return 1
 }
+
+# GPG agent setup
+export GPG_TTY=$(tty)
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+# Start gpg-agent if not running
+gpg-connect-agent /bye >/dev/null 2>&1

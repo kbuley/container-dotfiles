@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+# XDG Base Directory Specification
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
+# Ensure XDG directories exist
+mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_STATE_HOME" "$XDG_CACHE_HOME"
+
+# Tool-specific XDG compliance
+export GNUPGHOME="$XDG_DATA_HOME/gnupg"
+export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
+export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
+export NUGET_PACKAGES="$XDG_CACHE_HOME/NuGetPackages"
+export PYENV_ROOT="$XDG_DATA_HOME/pyenv"
+export PYLINTHOME="$XDG_CACHE_HOME/pylint"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+export HISTFILE="$XDG_STATE_HOME/bash/history"
+
+# Python - don't write .pyc files
+export PYTHONDONTWRITEBYTECODE=1
+
+# Less pager settings with colored man pages
+export LESS='FRX'
+export LESS_TERMCAP_mb=$'\e[1;32m'   # Begin blinking
+export LESS_TERMCAP_md=$'\e[1;32m'   # Begin bold (green)
+export LESS_TERMCAP_me=$'\e[0m'      # End mode
+export LESS_TERMCAP_se=$'\e[0m'      # End standout-mode
+export LESS_TERMCAP_so=$'\e[01;33m'  # Begin standout-mode (yellow)
+export LESS_TERMCAP_ue=$'\e[0m'      # End underline
+export LESS_TERMCAP_us=$'\e[1;4;31m' # Begin underline (red)
+
+# Create history directory for bash
+mkdir -p "$XDG_STATE_HOME/bash"
+
+# Add local bin directories to PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Starship prompt
+eval "$(starship init bash)"
+
+# Direnv hook
+eval "$(direnv hook bash)"
+
+# Bash completion
+if [ -f /etc/bash_completion ]; then
+  . /etc/bash_completion
+fi
+
+# Eza aliases
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --group --group-directories-first --icons --total-size'
+  alias ll='eza -la --group --group-directories-first --icons --git --total-size'
+  alias tree='eza --tree'
+fi
+
+# FZF keybindings
+if command -v fzf >/dev/null 2>&1; then
+  eval "$(fzf --bash)"
+fi
+
+# Better history with fzf
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoredups:erasedups
+shopt -s histappend
+
+# syntax highlighting and auto-suggestions
+source ~/.local/share/blesh/ble.sh
+
+# Editor - nvim is always available in devcontainer
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# Pager - use less with good defaults
+export PAGER='less'
+export LESS='-R -F -X' # -R: raw control chars, -F: quit if one screen, -X: no init
+
+# Architecture flags (for building native extensions)
+case "$(uname -m)" in
+aarch64 | arm64)
+  export ARCHFLAGS="-arch arm64"
+  ;;
+x86_64)
+  export ARCHFLAGS="-arch x86_64"
+  ;;
+esac
+
+# difftastic
+export DFT_DISPLAY=side-by-side-show-both
+export DFT_SKIP_UNCHANGED=true
+
+# some handy git functions
+function gi() {
+  IFS=,
+  curl -L -s "https://www.gitignore.io/api/$*"
+}
+
+git-top() {
+  cd "$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "Not inside a Git repository."
+    return 1
+  }
+}
+
+git-root() {
+  local dir="$PWD"
+  until [ "$dir" = "/" ]; do
+    if [ -e "$dir/.bare" ]; then
+      cd "$dir" || return 1
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  echo "You are not in a bare worktree."
+  return 1
+}

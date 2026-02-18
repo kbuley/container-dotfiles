@@ -1,0 +1,42 @@
+{{- /* Initializes variables with defaults */ -}}
+{{- $name := "Kevin Buley" -}}
+{{- $email := "kevin@buley.org" -}}
+{{- $github_username := "kbuley" -}}
+
+{{- /* Reuse previously set values if they exist */ -}}
+{{- if hasKey . "name" -}}
+{{-   $name = .name -}}
+{{- end -}}
+{{- if hasKey . "email" -}}
+{{-   $email = .email -}}
+{{- end -}}
+{{- if hasKey . "github_username" -}}
+{{-   $github_username = .github_username -}}
+{{- end -}}
+
+{{- if stdinIsATTY -}}
+{{-   writeToStdout "💡 Tip: you can re-initialize by running `chezmoi init --data=false`.\n" -}}
+{{- end -}}
+
+encryption = "age"
+useBuiltinAge = true
+progress = "auto"
+
+[age]
+    identity = "~/.config/chezmoi/key.txt"
+    # Use SSH public key as recipient (converted to age format)
+    # Get with: ssh-to-age -i ~/.ssh/id_ed25519.pub
+    recipient = "age1edhh7768952des95g67t64mjdt5zxn5eqha3mllevsvv8thzlf0q0wm4xa"
+[data]
+    email = {{ $email | quote }}
+    name = {{ $name | quote }}
+    github_username = {{ $github_username | quote }}
+    os = {{ .chezmoi.os | quote }}
+
+[github]
+    refreshPeriod = "12h"
+
+[".config/nvim"]
+    type = "git-repo"
+    url = "git@github.com:kbuley/nvim-config.git"
+    refreshPeriod = "168h"

@@ -56,11 +56,6 @@ if command -v eza >/dev/null 2>&1; then
   alias tree='eza --tree'
 fi
 
-# FZF keybindings
-if command -v fzf >/dev/null 2>&1; then
-  eval "$(fzf --bash)"
-fi
-
 # Better history with fzf
 export HISTSIZE=10000
 export HISTFILESIZE=20000

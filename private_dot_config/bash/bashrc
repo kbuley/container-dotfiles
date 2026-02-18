@@ -67,9 +67,6 @@ export HISTFILESIZE=20000
 export HISTCONTROL=ignoredups:erasedups
 shopt -s histappend
 
-# syntax highlighting and auto-suggestions
-source ~/.local/share/blesh/ble.sh
-
 # Editor - nvim is always available in devcontainer
 export EDITOR='nvim'
 export VISUAL='nvim'
